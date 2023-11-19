@@ -3,7 +3,7 @@ from django.http import HttpResponseRedirect, HttpResponse
 from django.contrib.auth.models import User
 from django.shortcuts import get_object_or_404, render, redirect
 from .models import CarMake, CarModel
-from .restapis import get_dealers_from_cf, get_dealer_reviews_from_cf, get_request
+from .restapis import get_dealers_from_cf, get_dealer_reviews_from_cf, get_request, post_request
 from django.contrib.auth import login, logout, authenticate
 from django.contrib import messages
 from datetime import datetime
@@ -110,12 +110,32 @@ def get_dealer_details(request, dealer_id):
         print("dealer_id: " + str(dealer_id))
         # Get dealers from the URL
         reviews = get_dealer_reviews_from_cf(url, dealerId=dealer_id)
+        if "review" not in reviews:
+            return HttpResponse(reviews)
         # Concat all review's short name
-        reviews_text = ', '.join([review_text.review for review_text in reviews])
+        reviews_text = ', '.join(["Review: " + review_text.review + ", Sentiment: " + review_text.sentiment for review_text in reviews])
         # Return a list of review text
         return HttpResponse(reviews_text)
 
 # Create a `add_review` view to submit a review
-# def add_review(request, dealer_id):
-# ...
+def add_review(request, dealer_id):
+    if request.user.is_authenticated:
+        review = {
+            "id": 999,
+            "name": "Alex F",
+            "dealership": dealer_id,
+            "review": "Everything was perfect!",
+            "purchase": "false",
+            "purchase_date": datetime.utcnow().isoformat(),
+            "car_make": "Tesla",
+            "car_model": "X",
+            "car_year": 2056
+        }
 
+        json_payload = {
+            "review": review
+        }
+
+        url = "https://alexf97-5000.theiadocker-1-labs-prod-theiak8s-4-tor01.proxy.cognitiveclass.ai/api/post_review"
+        result = post_request(url, json_payload, dealerId=dealer_id)
+        return HttpResponse(result["message"])
