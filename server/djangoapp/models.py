@@ -14,7 +14,7 @@ class CarMake(models.Model):
     description = models.CharField(null=True, max_length=200)
 
     def __str__(self):
-        return self.name + ", " + self.description
+        return self.name
 
 
 # <HINT> Create a Car Model model `class CarModel(models.Model):`:
@@ -29,9 +29,9 @@ class CarModel(models.Model):
     name = models.CharField(null=False, max_length=30)
     dealerId = models.IntegerField()
 
-    SEDAN = "sedan"
-    SUV = "suv"
-    WAGON = "wagon"
+    SEDAN = "Sedan"
+    SUV = "SUV"
+    WAGON = "Wagon"
 
     TYPE_CHOICES = [
         (SEDAN, "Sedan"),
@@ -106,3 +106,7 @@ class DealerReview:
 
     def __str__(self):
         return "Review: " + self.review + ", Sentiment: " + self.sentiment
+
+    def to_json(self):
+        return json.dumps(self, default=lambda o: o.__dict__,
+                            sort_keys=True, indent=4)
